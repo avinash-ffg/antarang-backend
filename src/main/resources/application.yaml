@@ -1,0 +1,21 @@
+spring:
+  application:
+    name: cap
+  datasource:
+    url: jdbc:postgresql://localhost:5432/antarang_cap
+    username: avinashjha11
+    password:
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+
+app:
+  jwt:
+    secret: ${JWT_SECRET:change-me-to-a-secure-256-bit-secret-key-in-production}
+    access-token-expiration-ms: 3600000
+    refresh-token-expiration-ms: 604800000
