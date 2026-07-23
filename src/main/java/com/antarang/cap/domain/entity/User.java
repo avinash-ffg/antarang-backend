@@ -18,6 +18,8 @@ import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 
+import java.time.Instant;
+import java.time.LocalDate;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
@@ -44,6 +46,30 @@ public class User extends BaseEntity {
     @Column(nullable = false)
     private String email;
 
+    @Column(length = 100)
+    private String username;
+
+    @Column(name = "mobile_number", length = 20)
+    private String mobileNumber;
+
+    @Column(name = "first_name", length = 100)
+    private String firstName;
+
+    @Column(name = "last_name", length = 100)
+    private String lastName;
+
+    @Column(name = "date_of_birth")
+    private LocalDate dateOfBirth;
+
+    @Column(name = "gender_config_id")
+    private UUID genderConfigId;
+
+    @Column(name = "preferred_platform_language_id")
+    private UUID preferredPlatformLanguageId;
+
+    @Column(name = "preferred_assessment_language_id")
+    private UUID preferredAssessmentLanguageId;
+
     @Column(name = "password_hash", nullable = false)
     private String passwordHash;
 
@@ -54,6 +80,9 @@ public class User extends BaseEntity {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 50)
     private UserStatus status = UserStatus.ACTIVE;
+
+    @Column(name = "last_login_at")
+    private Instant lastLoginAt;
 
     @OneToMany(mappedBy = "user", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<UserRole> userRoles = new HashSet<>();
@@ -90,6 +119,70 @@ public class User extends BaseEntity {
         this.email = email;
     }
 
+    public String getUsername() {
+        return username;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
+    public String getMobileNumber() {
+        return mobileNumber;
+    }
+
+    public void setMobileNumber(String mobileNumber) {
+        this.mobileNumber = mobileNumber;
+    }
+
+    public String getFirstName() {
+        return firstName;
+    }
+
+    public void setFirstName(String firstName) {
+        this.firstName = firstName;
+    }
+
+    public String getLastName() {
+        return lastName;
+    }
+
+    public void setLastName(String lastName) {
+        this.lastName = lastName;
+    }
+
+    public LocalDate getDateOfBirth() {
+        return dateOfBirth;
+    }
+
+    public void setDateOfBirth(LocalDate dateOfBirth) {
+        this.dateOfBirth = dateOfBirth;
+    }
+
+    public UUID getGenderConfigId() {
+        return genderConfigId;
+    }
+
+    public void setGenderConfigId(UUID genderConfigId) {
+        this.genderConfigId = genderConfigId;
+    }
+
+    public UUID getPreferredPlatformLanguageId() {
+        return preferredPlatformLanguageId;
+    }
+
+    public void setPreferredPlatformLanguageId(UUID preferredPlatformLanguageId) {
+        this.preferredPlatformLanguageId = preferredPlatformLanguageId;
+    }
+
+    public UUID getPreferredAssessmentLanguageId() {
+        return preferredAssessmentLanguageId;
+    }
+
+    public void setPreferredAssessmentLanguageId(UUID preferredAssessmentLanguageId) {
+        this.preferredAssessmentLanguageId = preferredAssessmentLanguageId;
+    }
+
     public String getPasswordHash() {
         return passwordHash;
     }
@@ -112,6 +205,14 @@ public class User extends BaseEntity {
 
     public void setStatus(UserStatus status) {
         this.status = status;
+    }
+
+    public Instant getLastLoginAt() {
+        return lastLoginAt;
+    }
+
+    public void setLastLoginAt(Instant lastLoginAt) {
+        this.lastLoginAt = lastLoginAt;
     }
 
     public Set<UserRole> getUserRoles() {

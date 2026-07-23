@@ -27,6 +27,12 @@ public class Tenant extends BaseEntity {
     @Column(nullable = false)
     private String name;
 
+    @Column(columnDefinition = "TEXT")
+    private String description;
+
+    @Column(name = "logo_url", columnDefinition = "TEXT")
+    private String logoUrl;
+
     @JdbcTypeCode(SqlTypes.JSON)
     @Column(name = "branding_config", columnDefinition = "jsonb")
     private Map<String, Object> brandingConfig;
@@ -53,6 +59,22 @@ public class Tenant extends BaseEntity {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public String getLogoUrl() {
+        return logoUrl;
+    }
+
+    public void setLogoUrl(String logoUrl) {
+        this.logoUrl = logoUrl;
     }
 
     public Map<String, Object> getBrandingConfig() {

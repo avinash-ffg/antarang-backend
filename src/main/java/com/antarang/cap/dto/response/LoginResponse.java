@@ -1,11 +1,12 @@
 package com.antarang.cap.dto.response;
 
-import java.util.UUID;
-
 public record LoginResponse(
         String accessToken,
         String refreshToken,
+        long expiresIn,
+        AuthUserSummary user,
+        // Legacy flat fields (aliases for existing clients)
         String role,
-        UUID primaryOrgUnitId
+        java.util.UUID primaryOrgUnitId
 ) {
 }

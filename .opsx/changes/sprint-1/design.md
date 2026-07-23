@@ -1,45 +1,64 @@
-# System Design: Sprint 1 Foundation
+# System Design: Sprint 1 Foundation (FFG Aligned)
 
 ## Tech Stack
 
-* **Framework:** Spring Boot 3.x (Java 17+)
-
+* **Framework:** Spring Boot 3.x / 4.x (Java 17+)
 * **Database:** PostgreSQL
-
 * **ORM:** Spring Data JPA / Hibernate
-
 * **Security:** Spring Security + JWT
+* **Migrations:** Flyway (V1, V2, V3)
 
-* **Migrations:** Flyway
+## Contract Strategy (Aliases)
 
-## Database Schema (Core Entities)
+* Prefer FFG request/response shapes.
+* Keep aliases: `email` ↔ `loginId`; `GET /users/me` and `GET /auth/me`; `POST /auth/refresh` and `POST /auth/refresh-token`.
+* Tenant from JWT `tenantId`; optional `X-Tenant-Id` must match when present.
+* Refresh tokens persisted in `refresh_tokens`; access-token logout also uses in-memory denylist.
 
-*Note: Entities must follow standard* `snake_case` *naming in the database and* `camelCase` *in Java.*
+## Database Schema
 
-*   `tenants`: `id` (UUID), `code`, `name`, `branding_config` (JSONB).
+### V1 — Core
 
-*   `org_units`: `id` (UUID), `tenant_id`, `parent_org_unit_id`, `org_unit_type` (STATE, DISTRICT, INSTITUTION, SCHOOL, PROGRAM, COHORT), `code`, `name`.
+* `tenants`, `org_units`, `users`, `roles`, `permissions`, `role_permissions`, `user_roles`, `auth_attempts`
 
-*   `users`: `id` (UUID), `tenant_id`, `primary_org_unit_id`, `email`, `password_hash`, `user_type`, `status`.
+### V2 — Tokens & audit
 
-*   `roles` & `permissions`: Standard RBAC setup mapped via `role_permissions` and `user_roles`. The `user_roles` table must include `scope_type` and `scope_id` to support Sub-Admin isolation.
+* `verification_tokens`
+* Soft-delete: `deleted_at`, `deleted_by` on business tables sharing `BaseEntity`
+* `career_cluster_translations`, `career_translations` (stubs; FKs deferred until careers/languages masters exist)
 
-## API Contracts 
+### V3 — Profile, consent, assignment, config
 
-### Standard Response Wrapper
+* Enrich `tenants` (`description`, `logo_url`), `org_units` (`description`, `address`, `metadata`), `users` (names, mobile, DOB, language FKs, etc.)
+* `user_profiles`, `consent_records`, `refresh_tokens`
+* `organizational_clusters`, `organizational_cluster_members`
+* `facilitator_student_assignments`, `assignment_history`
+* `configuration_groups`, `configurations`, `languages` (+ seeds)
 
-All successful API endpoints must wrap their payload in this structure:
+**Status:** V1–V3 applied; Hibernate `ddl-auto=validate` passes.
+
+## API Surface (Sprint 1)
+
+| Area | Endpoints |
+|------|-----------|
+| Auth | register, login, logout, refresh(/refresh-token), me, forgot/reset-password |
+| Users | CRUD, me, status, platform/assessment language, paginated list |
+| RBAC | GET roles, GET permissions, assign/remove user roles |
+| Consent | capture, list by user, withdraw |
+| Org | org-units CRUD, tree; clusters create/members |
+| Assignment | assign/list/unassign students; assignment history |
+| Config | configuration groups/values |
+| Languages | list languages |
+
+## Standard Response Wrapper
 
 ```json
-
 {
-
   "success": true,
-
   "message": "String",
-
   "data": {},
-
   "timestamp": "ISO-8601"
-
 }
+```
+
+Paginated `data`: `{ "content", "page", "size", "totalElements", "totalPages", "last" }`.

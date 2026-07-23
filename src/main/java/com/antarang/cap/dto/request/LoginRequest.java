@@ -1,11 +1,17 @@
 package com.antarang.cap.dto.request;
 
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotBlank;
-
+/**
+ * Accepts FFG {@code loginId} and/or legacy {@code email}.
+ */
 public record LoginRequest(
-        @NotBlank @Email String email,
-        @NotBlank String password,
-        String tenantCode
+        String loginId,
+        String email,
+        String password
 ) {
+    public String resolvedLoginId() {
+        if (loginId != null && !loginId.isBlank()) {
+            return loginId.trim();
+        }
+        return email != null ? email.trim() : null;
+    }
 }

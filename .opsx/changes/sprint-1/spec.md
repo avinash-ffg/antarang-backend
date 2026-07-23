@@ -1,45 +1,66 @@
-# Specification: Foundation & Identity
+# Specification: Foundation & Identity (FFG Sprint 1)
 
 ## Requirements
 
 ### System & Architecture
 
 * The system SHALL use PostgreSQL with UUIDs as primary keys for all tables.
-
-* The system SHALL implement standard audit columns `created_at`, `updated_at`, `created_by`, `updated_by`, `is_active`, `is_deleted`) for all business tables.
-
-* The system SHALL return all API responses in a standardized JSON format containing `success`, `message`, `data`, and `timestamp` fields.
+* The system SHALL implement standard audit columns (`created_at`, `updated_at`, `created_by`, `updated_by`, `is_active`, `is_deleted`, `deleted_at`, `deleted_by`) for applicable business tables.
+* The system SHALL return API responses in a standardized JSON format containing `success`, `message`, `data`, and `timestamp`.
+* List APIs SHALL support pagination (`page`, `size`) where specified.
 
 ### Authentication & Authorization
 
 * The system SHALL authenticate users using JWT Bearer Tokens.
+* The system SHALL persist refresh tokens and support logout revocation.
+* The system SHALL manage single-use, time-bound password-reset tokens via `verification_tokens`.
+* The system SHALL enforce RBAC for STUDENT, FACILITATOR, ADMIN, SUB_ADMIN, and SUPER_ADMIN.
+* The system SHALL support scoped Sub-Admin access via `user_roles.scope_type` / `scope_id`.
+* The system SHALL log authentication attempts (success and failure).
 
-* The system SHALL enforce Role-Based Access Control (RBAC) supporting STUDENT, FACILITATOR, ADMIN, SUB_ADMIN, and SUPER_ADMIN roles.
+### Consent, Org, Assignment, Config
 
-* The system SHALL restrict Sub-Admin access based on assigned organizational hierarchy or cluster scope.
-
-* The system SHALL log all authentication attempts (both success and failure).
+* The system SHALL capture and withdraw consent records.
+* The system SHALL manage org unit hierarchy and organizational clusters.
+* The system SHALL assign students to facilitators and retain assignment history.
+* The system SHALL expose configuration groups/values and languages.
 
 ## Scenarios
 
-### Scenario: Successful Login
+### Successful Login
 
-**GIVEN** a registered user exists with a valid email and password
+**GIVEN** a registered user with valid credentials  
+**WHEN** they POST to `/api/v1/auth/login` with `loginId` or `email`  
+**THEN** the system returns 200 with `accessToken`, `refreshToken`, `expiresIn`, and nested `user` data.
 
-**WHEN** the user submits their credentials via POST to `/api/v1/auth/login`
+### Token Refresh & Logout
 
-**THEN** the system returns a 200 OK
+**GIVEN** a valid refresh token  
+**WHEN** they POST to `/api/v1/auth/refresh` or `/api/v1/auth/refresh-token`  
+**THEN** new tokens are issued and the old refresh token is revoked.  
+**WHEN** they POST to `/api/v1/auth/logout`  
+**THEN** access and refresh tokens are invalidated.
 
-**AND** the payload includes a valid JWT `accessToken` and `refreshToken`
+### Consent Capture
 
-**AND** the user's role and primary organizational unit ID are included in the response data.
+**GIVEN** an authenticated user  
+**WHEN** they POST to `/api/v1/consents`  
+**THEN** a consent record is stored and returned.
 
-### Scenario: Unauthorized Access Attempt
+### Role Assignment
 
-**GIVEN** a user authenticated with the STUDENT role
+**GIVEN** an Admin  
+**WHEN** they POST roles to `/api/v1/users/{userId}/roles` with optional scope  
+**THEN** `user_roles` rows are created and authorities reflect the assignment.
 
-**WHEN** they attempt to access an ADMIN-only endpoint (e.g., POST `/api/v1/org-units`)
+### Facilitator Assignment
 
-**THEN** the system returns a 403 Forbidden
+**GIVEN** an Admin  
+**WHEN** they POST student IDs to `/api/v1/facilitators/{facilitatorId}/students`  
+**THEN** active assignments are created and history is recorded.
 
-**AND** the error code is `ACCESS_DENIED`.
+### Unauthorized Access
+
+**GIVEN** a STUDENT  
+**WHEN** they POST to `/api/v1/org-units`  
+**THEN** the system returns 403 with error code `ACCESS_DENIED`.

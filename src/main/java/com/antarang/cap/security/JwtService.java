@@ -56,10 +56,19 @@ public class JwtService {
         return extractAllClaims(token).get("type", String.class);
     }
 
+    public String extractJti(String token) {
+        return extractAllClaims(token).getId();
+    }
+
+    public Instant extractExpiration(String token) {
+        return extractAllClaims(token).getExpiration().toInstant();
+    }
+
     private String buildToken(UserPrincipal principal, long expirationMs, Map<String, Object> extraClaims) {
         Instant now = Instant.now();
         return Jwts.builder()
                 .claims(extraClaims)
+                .id(UUID.randomUUID().toString())
                 .subject(principal.getId().toString())
                 .claim("email", principal.getEmail())
                 .claim("tenantId", principal.getTenantId().toString())
